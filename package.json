@@ -1,0 +1,28 @@
+{
+  "name": "medication-request-api",
+  "version": "1.0.0",
+  "description": "Medication Request API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mariatorres1104/medication-request-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mariatorres1104/medication-request-api/issues"
+  },
+  "homepage": "https://github.com/mariatorres1104/medication-request-api#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "mongoose": "^8.13.1"
+  }
+}
