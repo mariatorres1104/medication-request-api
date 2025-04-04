@@ -57,5 +57,7 @@ app.post("/api/medicationrequest", async (req, res) => {
 });
 
 // Iniciar el servidor
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+const PORT = process.env.PORT || 10000; // ✅ CORRECTO
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en puerto ${PORT}`);
+});
