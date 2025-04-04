@@ -25,7 +25,8 @@ const medicationRequestSchema = new mongoose.Schema({
   medicationCodeableConcept: Object,
   subject: Object,
   authoredOn: Date,
-  requester: Object
+  requester: Object,
+  dosageInstruction: Array // Agregamos el campo faltante
 });
 
 const MedicationRequest = mongoose.model("MedicationRequest", medicationRequestSchema);
@@ -48,6 +49,7 @@ app.get("/api/medicationrequest", async (req, res) => {
 // Ruta para guardar una nueva prescripción
 app.post("/api/medicationrequest", async (req, res) => {
   try {
+    console.log("Datos recibidos:", req.body); // Para depuración
     const nuevaMed = new MedicationRequest(req.body);
     await nuevaMed.save();
     res.status(201).json({ mensaje: "Prescripción guardada", data: nuevaMed });
@@ -57,7 +59,7 @@ app.post("/api/medicationrequest", async (req, res) => {
 });
 
 // Iniciar el servidor
-const PORT = process.env.PORT || 10000; // ✅ CORRECTO
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
