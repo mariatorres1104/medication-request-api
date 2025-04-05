@@ -26,7 +26,7 @@ const medicationRequestSchema = new mongoose.Schema({
   subject: Object,
   authoredOn: Date,
   requester: Object,
-  dosageInstruction: Array // Agregamos el campo faltante
+  dosageInstruction: Array
 });
 
 const MedicationRequest = mongoose.model("MedicationRequest", medicationRequestSchema);
@@ -46,10 +46,24 @@ app.get("/api/medicationrequest", async (req, res) => {
   }
 });
 
+// Ruta para obtener una prescripción por ID
+app.get("/medicationrequests/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const prescription = await MedicationRequest.findById(id);
+    if (!prescription) {
+      return res.status(404).json({ mensaje: "Prescripción no encontrada" });
+    }
+    res.json(prescription);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al buscar la prescripción", error });
+  }
+});
+
 // Ruta para guardar una nueva prescripción
 app.post("/api/medicationrequest", async (req, res) => {
   try {
-    console.log("Datos recibidos:", req.body); // Para depuración
+    console.log("Datos recibidos:", req.body);
     const nuevaMed = new MedicationRequest(req.body);
     await nuevaMed.save();
     res.status(201).json({ mensaje: "Prescripción guardada", data: nuevaMed });
