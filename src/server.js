@@ -1,14 +1,13 @@
+// backend/index.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// Configuración de Express
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Conectar a MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -16,9 +15,8 @@ mongoose.connect(process.env.MONGO_URI, {
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "Error de conexión a MongoDB:"));
-db.once("open", () => console.log("Conectado a MongoDB"));
+db.once("open", () => console.log("✅ Conectado a MongoDB"));
 
-// Definir el esquema y modelo para MedicationRequest
 const medicationRequestSchema = new mongoose.Schema({
   status: String,
   intent: String,
@@ -26,7 +24,9 @@ const medicationRequestSchema = new mongoose.Schema({
   subject: Object,
   authoredOn: Date,
   requester: Object,
-  dosageInstruction: Array
+  dosageInstruction: Array,
+  delivered: Boolean, // para farmacéutico
+  deliveryDate: Date  // para farmacéutico
 });
 
 const MedicationRequest = mongoose.model("MedicationRequest", medicationRequestSchema);
@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
   res.send("API de MedicationRequest funcionando 🚀");
 });
 
-// Ruta para obtener todas las prescripciones
+// Obtener todas las prescripciones
 app.get("/api/medicationrequest", async (req, res) => {
   try {
     const data = await MedicationRequest.find();
@@ -46,25 +46,24 @@ app.get("/api/medicationrequest", async (req, res) => {
   }
 });
 
-// Ruta para obtener una prescripción por ID
-app.get("/medicationrequests/:id", async (req, res) => {
-  const id = req.params.id;
+// Obtener una prescripción por ID
+app.get("/api/medicationrequest/:id", async (req, res) => {
   try {
-    const prescription = await MedicationRequest.findById(id);
-    if (!prescription) {
-      return res.status(404).json({ mensaje: "Prescripción no encontrada" });
-    }
-    res.json(prescription);
+    const med = await MedicationRequest.findById(req.params.id);
+    if (!med) return res.status(404).json({ error: "No encontrado" });
+    res.json(med);
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al buscar la prescripción", error });
+    res.status(500).json({ error: "Error al buscar la prescripción" });
   }
 });
 
-// Ruta para guardar una nueva prescripción
+// Crear una nueva prescripción
 app.post("/api/medicationrequest", async (req, res) => {
   try {
-    console.log("Datos recibidos:", req.body);
-    const nuevaMed = new MedicationRequest(req.body);
+    const nuevaMed = new MedicationRequest({
+      ...req.body,
+      delivered: false
+    });
     await nuevaMed.save();
     res.status(201).json({ mensaje: "Prescripción guardada", data: nuevaMed });
   } catch (error) {
@@ -72,8 +71,23 @@ app.post("/api/medicationrequest", async (req, res) => {
   }
 });
 
-// Iniciar el servidor
+// Marcar una prescripción como entregada (rol farmacéutico)
+app.put("/api/medicationrequest/:id/deliver", async (req, res) => {
+  try {
+    const med = await MedicationRequest.findById(req.params.id);
+    if (!med) return res.status(404).json({ error: "Prescripción no encontrada" });
+
+    med.delivered = true;
+    med.deliveryDate = new Date();
+    await med.save();
+    res.json({ mensaje: "Medicamento entregado", data: med });
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar la entrega" });
+  }
+});
+
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
